@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 // ---- HÀM TIỆN ÍCH RESPONSIVE ----
 function getResponsiveScale() {
@@ -1030,53 +1028,79 @@ function animateHintIcon(time) {
   }
 }
 
-// ---- KHAI BÁO BIẾN CHO LỜI CHÚC 3D ----
+// ---- KHAI BÁO BIẾN CHO LỜI CHÚC ----
 let greetingTextMesh;
 
 /**
- * Tạo lời chúc 3D nổi bật trong cảnh.
+ * Tạo lời chúc bằng canvas (hỗ trợ tiếng Việt).
  */
 function createGreetingText() {
-    const loader = new FontLoader();
-    // Đường dẫn đến file font JSON. Bạn có thể thay thế bằng font của riêng mình.
-    // Font này là một font tiêu chuẩn của Three.js, được tải từ CDN.
-    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-        // ---- TÙY CHỈNH LỜI CHÚC CỦA BẠN TẠI ĐÂY ----
-        const text = "Chúc Mừng Sinh Nhật"; // Thay đổi nội dung lời chúc
-        const size = 5; // Kích thước chữ (càng lớn chữ càng to)
-        const height = 0.8; // Độ sâu của chữ 3D
-        const bevelThickness = 0.2; // Độ dày của cạnh vát
-        const bevelSize = 0.1; // Kích thước của cạnh vát
+    const canvasSize = 1024;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvasSize;
+    canvas.height = 256;
+    const context = canvas.getContext('2d');
 
-        const textGeometry = new TextGeometry(text, {
-            font: font,
-            size: size,
-            height: height,
-            curveSegments: 12, // Số lượng phân đoạn đường cong
-            bevelEnabled: true, // Bật hiệu ứng vát cạnh
-            bevelThickness: bevelThickness,
-            bevelSize: bevelSize,
-            bevelOffset: 0,
-            bevelSegments: 5 // Số lượng phân đoạn vát cạnh
-        });
-        textGeometry.center(); // Căn giữa hình học của chữ
+    const text = 'Chúc Mừng Sinh Nhật';
+    const fontSize = 90;
+    context.font = `bold ${fontSize}px Arial, sans-serif`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
 
-        // Vật liệu cho chữ:
-        // Material 0: Mặt trước của chữ (màu xanh neon)
-        // Material 1: Cạnh vát của chữ (màu tím)
-        const materials = [
-            new THREE.MeshPhongMaterial({ color: 0x00eaff }), // Màu xanh neon
-            new THREE.MeshPhongMaterial({ color: 0xa259c7 }) // Màu tím
-        ];
+    // Layer 1: Outer glow tím đậm
+    context.shadowColor = '#cc00ff';
+    context.shadowBlur = 40;
+    context.lineWidth = 10;
+    context.strokeStyle = '#6600cc';
+    context.strokeText(text, canvasSize / 2, canvas.height / 2);
 
-        greetingTextMesh = new THREE.Mesh(textGeometry, materials);
-        // Đặt vị trí của chữ (X, Y, Z)
-        // Y: độ cao so với tâm cảnh
-        // Z: độ sâu (âm là gần camera hơn, dương là xa hơn)
-        greetingTextMesh.position.set(0, 25, -15); // Điều chỉnh vị trí để phù hợp với cảnh của bạn
-        greetingTextMesh.name = 'greeting-text'; // Đặt tên để dễ dàng truy cập sau này
-        scene.add(greetingTextMesh); // Thêm chữ vào scene
+    // Layer 2: Glow tím nhạt
+    context.shadowColor = '#e066ff';
+    context.shadowBlur = 25;
+    context.lineWidth = 6;
+    context.strokeStyle = '#aa44dd';
+    context.strokeText(text, canvasSize / 2, canvas.height / 2);
+
+    // Layer 3: Glow hồng
+    context.shadowColor = '#ff88dd';
+    context.shadowBlur = 15;
+    context.lineWidth = 4;
+    context.strokeStyle = '#ff66bb';
+    context.strokeText(text, canvasSize / 2, canvas.height / 2);
+
+    // Layer 4: Viền trắng
+    context.shadowColor = '#ffffff';
+    context.shadowBlur = 8;
+    context.lineWidth = 2;
+    context.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    context.strokeText(text, canvasSize / 2, canvas.height / 2);
+
+    // Layer 5: Chữ trắng sáng
+    context.shadowColor = '#ffffff';
+    context.shadowBlur = 12;
+    context.fillStyle = '#ffffff';
+    context.fillText(text, canvasSize / 2, canvas.height / 2);
+
+    // Layer 6: Highlight
+    context.shadowBlur = 0;
+    context.fillStyle = 'rgba(255, 255, 255, 1)';
+    context.fillText(text, canvasSize / 2, canvas.height / 2);
+
+    const textTexture = new THREE.CanvasTexture(canvas);
+    textTexture.needsUpdate = true;
+    const textMaterial = new THREE.MeshBasicMaterial({
+        map: textTexture,
+        transparent: true,
+        side: THREE.DoubleSide
     });
+
+    const planeWidth = isMobile ? 28 : 40;
+    const planeHeight = isMobile ? 7 : 10;
+    const planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+    greetingTextMesh = new THREE.Mesh(planeGeometry, textMaterial);
+    greetingTextMesh.position.set(0, 22, -20);
+    greetingTextMesh.name = 'greeting-text';
+    scene.add(greetingTextMesh);
 }
 
 // ---- CHỈNH SỬA VÒNG LẶP ANIMATE ----
@@ -1128,10 +1152,7 @@ function animate() {
     // Đảm bảo lời chúc cũng hiển thị khi intro chưa bắt đầu
     if (greetingTextMesh) {
         greetingTextMesh.visible = true;
-        greetingTextMesh.material.forEach(mat => {
-            mat.transparent = false;
-            mat.opacity = 1;
-        });
+        greetingTextMesh.material.opacity = 1;
     }
   } else {
     // Trạng thái sau khi intro bắt đầu
@@ -1161,12 +1182,7 @@ function animate() {
     // Xử lý riêng cho lời chúc để giữ màu và hiệu ứng ban đầu
     if (greetingTextMesh) {
         greetingTextMesh.visible = true;
-        // Giữ nguyên màu của lời chúc, không bị ảnh hưởng bởi obj.material.color.set(0xffffff)
-        // Nếu muốn lời chúc cũng mờ dần, bạn có thể áp dụng fadeOpacity tương tự
-        greetingTextMesh.material.forEach(mat => {
-            mat.transparent = false; // Đảm bảo không trong suốt
-            mat.opacity = 1; // Đảm bảo hiển thị đầy đủ
-        });
+        greetingTextMesh.material.opacity = 1;
     }
   }
 
@@ -1241,11 +1257,9 @@ function animate() {
   planet.lookAt(camera.position);
   animatePlanetSystem();
 
-  // Cập nhật rotation cho lời chúc 3D
+  // Cập nhật cho lời chúc (luôn hướng về camera)
   if (greetingTextMesh) {
-      greetingTextMesh.rotation.y += 0.001; // Xoay nhẹ theo trục Y
-      // Bạn có thể thêm hiệu ứng bobbing (lên xuống) hoặc các hiệu ứng khác tại đây
-      // greetingTextMesh.position.y = 25 + Math.sin(time * 0.5) * 0.5;
+      greetingTextMesh.lookAt(camera.position);
   }
 
   if (starField && starField.material && starField.material.opacity !== undefined) {
