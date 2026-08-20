@@ -877,22 +877,19 @@ function animatePlanetSystem() {
 // ---- RANDOM MUSIC NÈ ----
 // ===========================
 
-let galaxyAudio = null;
+let audioStarted = false;
 
 function loadAndPlayAudio() {
-  if (galaxyAudio) return; // Đã load rồi thì không load lại
+  if (audioStarted) return;
+  audioStarted = true;
 
-  const audioSources = ["Happy Birthday to You.mp3"];
-  const selectedSrc = audioSources[Math.floor(Math.random() * audioSources.length)];
-
-  galaxyAudio = new Audio(selectedSrc);
-  galaxyAudio.loop = true;
-  galaxyAudio.volume = 1.0;
-  galaxyAudio.preload = "auto";
-
-  galaxyAudio.play().catch(err => {
-    console.warn("Audio play blocked:", err);
-  });
+  const bgMusic = document.getElementById('bg-music');
+  if (bgMusic) {
+    bgMusic.volume = 1.0;
+    bgMusic.play().catch(err => {
+      console.warn("Audio play blocked:", err);
+    });
+  }
 }
 
 
@@ -1002,10 +999,10 @@ function animateHintIcon(time) {
     const ringScale = 1 + Math.sin(time * tapFrequency) * 0.1;
     ring.scale.set(ringScale, ringScale, 1);
     ring.material.opacity = 0.5 + Math.sin(time * tapFrequency) * 0.2;
-    // Xử lý văn bản gợi ý (thêm hiệu ứng mới)
+    // Xử lý văn bản gợi ý
     if (hintText) {
       hintText.visible = true;
-      hintText.material.opacity = 0.7 + Math.sin(time * 3) * 0.3;
+      hintText.material.opacity = 1.0; // Luôn sáng tối đa
       hintText.position.y = 15 + Math.sin(time * 2) * 0.5;
       hintText.lookAt(camera.position);
     }
@@ -1247,43 +1244,56 @@ function createHintText() {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = canvasSize;
   const context = canvas.getContext('2d');
-  const fontSize = 62;
+  const fontSize = 70;
   const text = 'Chạm Vào Tinh Cầu';
   context.font = `bold ${fontSize}px Arial, sans-serif`;
   context.textAlign = 'center';
   context.textBaseline = 'middle';
 
-  // Layer 1: Outer glow (hồng tím đậm, blur lớn)
-  context.shadowColor = '#ff69b4';
-  context.shadowBlur = 30;
-  context.lineWidth = 6;
-  context.strokeStyle = '#a020a0';
+  // Layer 1: Outer glow tím đậm
+  context.shadowColor = '#ff00ff';
+  context.shadowBlur = 40;
+  context.lineWidth = 8;
+  context.strokeStyle = '#8800cc';
   context.strokeText(text, canvasSize / 2, canvasSize / 2);
 
-  // Layer 2: Middle glow ( tím nhạt)
-  context.shadowColor = '#e066ff';
-  context.shadowBlur = 18;
-  context.lineWidth = 4;
-  context.strokeStyle = '#da70d6';
+  // Layer 2: Glow tím nhạt
+  context.shadowColor = '#cc66ff';
+  context.shadowBlur = 25;
+  context.lineWidth = 5;
+  context.strokeStyle = '#aa44dd';
   context.strokeText(text, canvasSize / 2, canvasSize / 2);
 
-  // Layer 3: Inner glow (hồng nhạt)
-  context.shadowColor = '#ffb6c1';
-  context.shadowBlur = 10;
+  // Layer 3: Glow hồng
+  context.shadowColor = '#ff88dd';
+  context.shadowBlur = 15;
   context.lineWidth = 3;
-  context.strokeStyle = '#ff99cc';
+  context.strokeStyle = '#ff66bb';
   context.strokeText(text, canvasSize / 2, canvasSize / 2);
 
-  // Layer 4: Core text (trắng sáng)
+  // Layer 4: Viền trắng
   context.shadowColor = '#ffffff';
-  context.shadowBlur = 8;
+  context.shadowBlur = 10;
+  context.lineWidth = 2;
+  context.strokeStyle = '#ffffff';
+  context.strokeText(text, canvasSize / 2, canvasSize / 2);
+
+  // Layer 5: Viền trắng ngoài cùng
+  context.shadowColor = '#ffffff';
+  context.shadowBlur = 5;
+  context.lineWidth = 2;
+  context.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+  context.strokeText(text, canvasSize / 2, canvasSize / 2);
+
+  // Layer 6: Chữ trắng sáng rực
+  context.shadowColor = '#ffffff';
+  context.shadowBlur = 15;
   context.fillStyle = '#ffffff';
   context.fillText(text, canvasSize / 2, canvasSize / 2);
 
-  // Layer 5: Bright highlight overlay
-  context.shadowColor = 'transparent';
+  // Layer 7: Highlight trắng thuần
   context.shadowBlur = 0;
-  context.fillStyle = 'rgba(255,255,255,0.9)';
+  context.fillStyle = 'rgba(255, 255, 255, 1)';
   context.fillText(text, canvasSize / 2, canvasSize / 2);
 
   const textTexture = new THREE.CanvasTexture(canvas);
@@ -1293,7 +1303,7 @@ function createHintText() {
     transparent: true,
     side: THREE.DoubleSide
   });
-  const planeGeometry = new THREE.PlaneGeometry(18, 9);
+  const planeGeometry = new THREE.PlaneGeometry(20, 10);
   hintText = new THREE.Mesh(planeGeometry, textMaterial);
   hintText.position.set(0, 16, 0);
   scene.add(hintText);
