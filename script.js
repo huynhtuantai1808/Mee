@@ -688,7 +688,7 @@ scene.add(planet);
 
 // ---- TẠO CÁC VÒNG CHỮ QUAY QUANH HÀNH TINH ----
 const ringTexts = [
-  'Chúc Mừng Sinh Nhật Dương',
+  'Chúc Mừng Sinh Nhật Dương (Lùn)',
   'Huỳnh Thị Thùy Dương',
   'Tuổi Mới Bớt Láo Nha',
   '20/08/2010 - 20/08/2026',
