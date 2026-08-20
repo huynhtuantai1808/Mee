@@ -1,0 +1,6 @@
+# Disable Jekyll processing
+jekyll_enabled: false
+
+# GitHub Pages settings
+theme: none
+plugins: []
