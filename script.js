@@ -85,7 +85,7 @@ const galaxyParameters = {
   outsideColor: new THREE.Color(0x48b8b8),
 };
 
-const defaultHeartImages = Array.from({ length: 20 }, (_, i) => `images/img/${i + 1}.jpg`);
+const defaultHeartImages = Array.from({ length: 40 }, (_, i) => `images/img/${i + 1}.jpg`);
 
 const heartImages = [
   ...(window.dataCCD?.data?.heartImages || []),
@@ -234,8 +234,50 @@ function createNeonTexture(image, size) {
     offsetX = (size - drawWidth) / 2;
     offsetY = 0;
   }
-  ctx.clearRect(0, 0, size, size);
-  const cornerRadius = size * 0.1;
+  const cornerRadius = size * 0.12;
+
+  // === Layer 1: Outer glow (tím hồng mờ) ===
+  ctx.shadowColor = '#ff69b4';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(offsetX + cornerRadius, offsetY);
+  ctx.lineTo(offsetX + drawWidth - cornerRadius, offsetY);
+  ctx.arcTo(offsetX + drawWidth, offsetY, offsetX + drawWidth, offsetY + cornerRadius, cornerRadius);
+  ctx.lineTo(offsetX + drawWidth, offsetY + drawHeight - cornerRadius);
+  ctx.arcTo(offsetX + drawWidth, offsetY + drawHeight, offsetX + drawWidth - cornerRadius, offsetY + drawHeight, cornerRadius);
+  ctx.lineTo(offsetX + cornerRadius, offsetY + drawHeight);
+  ctx.arcTo(offsetX, offsetY + drawHeight, offsetX, offsetY + drawHeight - cornerRadius, cornerRadius);
+  ctx.lineTo(offsetX, offsetY + cornerRadius);
+  ctx.arcTo(offsetX, offsetY, offsetX + cornerRadius, offsetY, cornerRadius);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255, 100, 180, 0.15)';
+  ctx.fill();
+  ctx.restore();
+
+  // === Layer 2: Bright border glow ===
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(offsetX + cornerRadius, offsetY);
+  ctx.lineTo(offsetX + drawWidth - cornerRadius, offsetY);
+  ctx.arcTo(offsetX + drawWidth, offsetY, offsetX + drawWidth, offsetY + cornerRadius, cornerRadius);
+  ctx.lineTo(offsetX + drawWidth, offsetY + drawHeight - cornerRadius);
+  ctx.arcTo(offsetX + drawWidth, offsetY + drawHeight, offsetX + drawWidth - cornerRadius, offsetY + drawHeight, cornerRadius);
+  ctx.lineTo(offsetX + cornerRadius, offsetY + drawHeight);
+  ctx.arcTo(offsetX, offsetY + drawHeight, offsetX, offsetY + drawHeight - cornerRadius, cornerRadius);
+  ctx.lineTo(offsetX, offsetY + cornerRadius);
+  ctx.arcTo(offsetX, offsetY, offsetX + cornerRadius, offsetY, cornerRadius);
+  ctx.closePath();
+  ctx.shadowColor = '#e040fb';
+  ctx.shadowBlur = 12;
+  ctx.strokeStyle = 'rgba(200, 80, 255, 0.7)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.restore();
+
+  // === Layer 3: Clip và vẽ ảnh ===
   ctx.save();
   ctx.beginPath();
   ctx.moveTo(offsetX + cornerRadius, offsetY);
@@ -251,6 +293,27 @@ function createNeonTexture(image, size) {
   ctx.clip();
   ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
   ctx.restore();
+
+  // === Layer 4: Nền tối phía sau ảnh (che trùng lặp) ===
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(offsetX + cornerRadius, offsetY);
+  ctx.lineTo(offsetX + drawWidth - cornerRadius, offsetY);
+  ctx.arcTo(offsetX + drawWidth, offsetY, offsetX + drawWidth, offsetY + cornerRadius, cornerRadius);
+  ctx.lineTo(offsetX + drawWidth, offsetY + drawHeight - cornerRadius);
+  ctx.arcTo(offsetX + drawWidth, offsetY + drawHeight, offsetX + drawWidth - cornerRadius, offsetY + drawHeight, cornerRadius);
+  ctx.lineTo(offsetX + cornerRadius, offsetY + drawHeight);
+  ctx.arcTo(offsetX, offsetY + drawHeight, offsetX, offsetY + drawHeight - cornerRadius, cornerRadius);
+  ctx.lineTo(offsetX, offsetY + cornerRadius);
+  ctx.arcTo(offsetX, offsetY, offsetX + cornerRadius, offsetY, cornerRadius);
+  ctx.closePath();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.lineWidth = 1;
+  ctx.shadowColor = '#ffffff';
+  ctx.shadowBlur = 6;
+  ctx.stroke();
+  ctx.restore();
+
   return new THREE.CanvasTexture(canvas);
 }
 
@@ -327,26 +390,26 @@ for (let group = 0; group < numGroups; group++) {
   img.onload = () => {
     const neonTexture = createNeonTexture(img, 256);
 
-    // Material khi ở gần
+    // Material khi ở gần (ảnh rõ hơn)
     const materialNear = new THREE.PointsMaterial({
-      size: 1.8,
+      size: 2.5,
       map: neonTexture,
       transparent: false,
-      alphaTest: 0.2,
+      alphaTest: 0.1,
       depthWrite: true,
       depthTest: true,
       blending: THREE.NormalBlending,
       vertexColors: true
     });
 
-    // Material khi ở xa
+    // Material khi ở xa (ảnh vẫn thấy được)
     const materialFar = new THREE.PointsMaterial({
-      size: 1.8,
+      size: 2.5,
       map: neonTexture,
       transparent: true,
-      alphaTest: 0.2,
+      alphaTest: 0.1,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       vertexColors: true
     });
 
@@ -612,9 +675,9 @@ scene.add(planet);
 // ---- TẠO CÁC VÒNG CHỮ QUAY QUANH HÀNH TINH ----
 const ringTexts = [
   'Happy Birthday',
-  "Huỳnh Thị Thùy Lâm",
+  "Huỳnh Thị Thùy Dương",
   "Tuổi mới bớt láo lại nha",
-  "16/07/2008 --> 16/07/2025",
+  "20/08/2010 --> 20/08/2026 ",
   ...(window.dataCCD && window.dataCCD.data.ringTexts ? window.dataCCD.data.ringTexts : [])
 ];
 
@@ -816,30 +879,21 @@ function animatePlanetSystem() {
 
 let galaxyAudio = null;
 
-function preloadGalaxyAudio() {
-  const audioSources = [
-   "Happy Birthday to You.mp3"
-  ];
+function loadAndPlayAudio() {
+  if (galaxyAudio) return; // Đã load rồi thì không load lại
 
-  const randomIndex = Math.floor(Math.random() * audioSources.length);
-  const selectedSrc = audioSources[randomIndex];
+  const audioSources = ["Happy Birthday to You.mp3"];
+  const selectedSrc = audioSources[Math.floor(Math.random() * audioSources.length)];
 
   galaxyAudio = new Audio(selectedSrc);
   galaxyAudio.loop = true;
   galaxyAudio.volume = 1.0;
-
-  // Preload không autoplay
   galaxyAudio.preload = "auto";
-}
 
-function playGalaxyAudio() {
-  if (galaxyAudio) {
-    galaxyAudio.play().catch(err => {
-      console.warn("Audio play blocked or delayed:", err);
-    });
-  }
+  galaxyAudio.play().catch(err => {
+    console.warn("Audio play blocked:", err);
+  });
 }
-preloadGalaxyAudio();
 
 
 
@@ -1193,25 +1247,45 @@ function createHintText() {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = canvasSize;
   const context = canvas.getContext('2d');
-  const fontSize = 50;
+  const fontSize = 62;
   const text = 'Chạm Vào Tinh Cầu';
   context.font = `bold ${fontSize}px Arial, sans-serif`;
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.shadowColor = '#ffb3de';
-  context.shadowBlur = 5;
-  context.lineWidth = 2;
-  context.strokeStyle = 'rgba(255, 200, 220, 0.8)';
+
+  // Layer 1: Outer glow (hồng tím đậm, blur lớn)
+  context.shadowColor = '#ff69b4';
+  context.shadowBlur = 30;
+  context.lineWidth = 6;
+  context.strokeStyle = '#a020a0';
   context.strokeText(text, canvasSize / 2, canvasSize / 2);
-  context.shadowColor = '#e0b3ff';
-  context.shadowBlur = 5;
-  context.lineWidth = 2;
-  context.strokeStyle = 'rgba(220, 180, 255, 0.5)';
+
+  // Layer 2: Middle glow ( tím nhạt)
+  context.shadowColor = '#e066ff';
+  context.shadowBlur = 18;
+  context.lineWidth = 4;
+  context.strokeStyle = '#da70d6';
   context.strokeText(text, canvasSize / 2, canvasSize / 2);
+
+  // Layer 3: Inner glow (hồng nhạt)
+  context.shadowColor = '#ffb6c1';
+  context.shadowBlur = 10;
+  context.lineWidth = 3;
+  context.strokeStyle = '#ff99cc';
+  context.strokeText(text, canvasSize / 2, canvasSize / 2);
+
+  // Layer 4: Core text (trắng sáng)
+  context.shadowColor = '#ffffff';
+  context.shadowBlur = 8;
+  context.fillStyle = '#ffffff';
+  context.fillText(text, canvasSize / 2, canvasSize / 2);
+
+  // Layer 5: Bright highlight overlay
   context.shadowColor = 'transparent';
   context.shadowBlur = 0;
-  context.fillStyle = 'white';
+  context.fillStyle = 'rgba(255,255,255,0.9)';
   context.fillText(text, canvasSize / 2, canvasSize / 2);
+
   const textTexture = new THREE.CanvasTexture(canvas);
   textTexture.needsUpdate = true;
   const textMaterial = new THREE.MeshBasicMaterial({
@@ -1219,9 +1293,9 @@ function createHintText() {
     transparent: true,
     side: THREE.DoubleSide
   });
-  const planeGeometry = new THREE.PlaneGeometry(16, 8);
+  const planeGeometry = new THREE.PlaneGeometry(18, 9);
   hintText = new THREE.Mesh(planeGeometry, textMaterial);
-  hintText.position.set(0, 15, 0);
+  hintText.position.set(0, 16, 0);
   scene.add(hintText);
 }
 
@@ -1335,7 +1409,7 @@ function onCanvasClick(event) {
     introStarted = true;
     fadeInProgress = true;
     document.body.classList.add("intro-started");
-    playGalaxyAudio(); // Khi script load, preload nhạc sẵn
+    loadAndPlayAudio();
 
     startCameraAnimation();
 
@@ -1346,10 +1420,6 @@ function onCanvasClick(event) {
 }
 
 renderer.domElement.addEventListener("click", onCanvasClick);
-
-animate();
-
-renderer.domElement.addEventListener('click', onCanvasClick);
 
 animate();
 
