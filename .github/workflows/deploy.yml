@@ -1,0 +1,94 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, duong]
+  pull_request:
+    branches: [main, duong]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          fi
+
+      - name: Validate HTML
+        run: |
+          if [ -f index.html ]; then
+            echo "HTML file found: index.html"
+            head -20 index.html
+          fi
+
+      - name: Check required files
+        run: |
+          echo "=== Project Structure ==="
+          ls -la
+          echo ""
+          echo "=== Source Files ==="
+          ls -la *.html *.css *.js 2>/dev/null || echo "Source files checked"
+          echo ""
+          echo "=== Images Directory ==="
+          ls -la images/ 2>/dev/null || echo "No images directory"
+          echo ""
+          echo "=== Audio Files ==="
+          ls -la *.mp3 2>/dev/null || echo "No MP3 files"
+
+      - name: Build summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Files Count" >> $GITHUB_STEP_SUMMARY
+          echo "- HTML files: $(find . -name "*.html" -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- CSS files: $(find . -name "*.css" -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- JS files: $(find . -name "*.js" -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- Images: $(find images -type f 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- Audio: $(find . -name "*.mp3" -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/duong'
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Deployment summary
+        run: |
+          echo "## Deploy Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **Live URL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

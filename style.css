@@ -1,23 +1,25 @@
-/* Global Reset and Base Styles */
-html,
-body {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden; /* Prevent scrolling */
-}
-
+/* ===== RESET & BASE ===== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Removed overflow: hidden from * to allow internal scrolling if needed for specific elements later,
-     as html, body already handle global overflow. */
 }
 
-/* Main Container for Background and Canvas */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh; /* Dynamic viewport height cho mobile */
+  overflow: hidden;
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ===== CONTAINER ===== */
 #container {
   width: 100vw;
-  height: 100vh; /* Using 100vh directly, or calc(var(--vh, 1vh) * 100) for mobile viewport height fix */
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
   background: radial-gradient(circle at center, #000010 0%, #000000 100%);
   position: fixed;
   top: 0;
@@ -25,18 +27,20 @@ body {
   z-index: 10;
 }
 
-/* Canvas Styling */
+/* ===== CANVAS ===== */
 canvas {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100% !important;
+  height: 100% !important;
   z-index: 11;
-  /* Transitions for blur/brightness/grayscale are handled by body classes below */
+  touch-action: none;
 }
 
-/* Landscape Warning Overlay (Hidden by default, shown via JS/body classes) */
+/* ===== LANDSCAPE WARNING ===== */
 #landscape-warning {
-  display: none !important; /* Force hide by default, overridden by JS/body class */
+  display: none !important;
   position: fixed;
   z-index: 9999;
   top: 0;
@@ -49,37 +53,54 @@ canvas {
   justify-content: center;
   align-items: center;
   text-align: center;
-  opacity: 0; /* Initial state, transition handled by body class */
-  pointer-events: none; /* Disable interaction when hidden, transition handled by body class */
+  opacity: 0;
+  pointer-events: none;
   transition: opacity 0.7s cubic-bezier(0.4, 2, 0.6, 1);
+  padding: 1rem;
 }
 
-/* Content within the landscape warning */
 #landscape-warning .warning-content {
   position: relative;
   z-index: 2;
-  padding: 2rem 2.5rem;
+  padding: 1.5rem 2rem;
   border-radius: 24px;
-  background: rgba(20, 30, 60, 0.7);
+  background: rgba(20, 30, 60, 0.85);
   box-shadow: 0 0 32px 8px #00eaff44, 0 0 0 2px #fff2 inset;
   border: 1.5px solid #00eaff88;
+  max-width: 90vw;
 }
 
 #landscape-warning h1 {
   font-family: 'Orbitron', 'Montserrat', Arial, sans-serif;
-  font-size: 2.2rem;
-  margin-bottom: 1rem;
+  font-size: clamp(1.4rem, 5vw, 2.2rem);
+  margin-bottom: 0.8rem;
   letter-spacing: 2px;
   color: #eb0f0f;
 }
 
 #landscape-warning p {
-  font-size: 1.3rem;
+  font-size: clamp(1rem, 3.5vw, 1.3rem);
   color: #e6131a;
   text-shadow: 0 0 8px #00eaff99, 0 0 2px #e40606;
 }
 
-/* Starfield Background for Landscape Warning */
+/* ===== ROTATE ICON ===== */
+.rotate-icon {
+  width: clamp(40px, 12vw, 56px);
+  height: clamp(40px, 12vw, 56px);
+  margin: 0 auto 1rem auto;
+  background: url('data:image/svg+xml;utf8,<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="16" width="32" height="24" rx="6" fill="%23fff" stroke="%2300eaff" stroke-width="2"/><path d="M28 8v4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M28 44v4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M8 28h4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M44 28h4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M18 38l-4 4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/><path d="M38 38l4 4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/><path d="M18 18l-4-4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/><path d="M38 18l4-4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/></svg>') center/contain no-repeat;
+  animation: rotate-phone 1.6s infinite cubic-bezier(0.4, 2, 0.6, 1);
+}
+
+@keyframes rotate-phone {
+  0% { transform: rotate(-18deg); }
+  20% { transform: rotate(18deg); }
+  40% { transform: rotate(-18deg); }
+  100% { transform: rotate(-18deg); }
+}
+
+/* ===== STARFIELD BACKGROUND ===== */
 #landscape-warning .stars-bg {
   position: absolute;
   top: 0;
@@ -92,7 +113,6 @@ canvas {
   pointer-events: none;
   opacity: 0.7;
   animation: stars-move 16s linear infinite;
-  /* Consolidate base background properties */
   background:
     radial-gradient(circle, #ee0606 1.2px, transparent 1.2px) 20px 30px / 80px 80px repeat,
     radial-gradient(circle, #df0808 1.5px, transparent 1.5px) 60px 80px / 120px 120px repeat,
@@ -100,7 +120,6 @@ canvas {
     radial-gradient(circle, #df0d0d 0.8px, transparent 0.8px) 10px 10px / 40px 40px repeat;
 }
 
-/* Additional star layers for parallax effect */
 #landscape-warning .stars-bg::before,
 #landscape-warning .stars-bg::after {
   content: '';
@@ -126,38 +145,32 @@ canvas {
   opacity: 0.5;
   background-size: 120px 120px, 60px 60px, 100px 100px;
   background-position: 60px 60px, 30px 30px, 10px 10px;
-  animation-duration: 24s; /* Slower animation for depth */
+  animation-duration: 24s;
 }
 
-/* Keyframe animation for star movement */
 @keyframes stars-move {
-  0% {
-    background-position: 20px 30px, 60px 80px, 40px 60px, 10px 10px;
-  }
-  100% {
-    background-position: 100px 100px, 0px 0px, 60px 60px, 40px 40px;
-  }
+  0% { background-position: 20px 30px, 60px 80px, 40px 60px, 10px 10px; }
+  100% { background-position: 100px 100px, 0px 0px, 60px 60px, 40px 40px; }
 }
 
-/* Start Overlay (Hidden by default, shown via JS/body classes) */
-#start-overlay {
-  display: none !important; /* Force hide by default, overridden by JS/body class */
+/* ===== DARK OVERLAY ===== */
+#dark-overlay {
   position: fixed;
-  z-index: 10000;
+  z-index: 5;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 20, 40, 0.95);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(10, 10, 30, 0.92);
+  pointer-events: none;
+  transition: opacity 0.6s;
+  opacity: 1;
 }
 
-/* Start Button Styling */
+/* ===== START BUTTON ===== */
 #start-btn {
-  font-size: 2rem;
-  padding: 1rem 2.5rem;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  padding: clamp(0.8rem, 2vw, 1rem) clamp(2rem, 5vw, 2.5rem);
   border-radius: 2rem;
   border: none;
   background: linear-gradient(90deg, #ffb6e6, #a259c7, #00eaff);
@@ -167,33 +180,33 @@ canvas {
   transition: background 0.3s;
 }
 
-#start-btn:hover {
-  background: linear-gradient(90deg, #00eaff, #a259c7, #ffb6e6);
+/* ===== RESPONSIVE: Portrait Mode ===== */
+body.portrait #dark-overlay {
+  display: none !important;
+  opacity: 0 !important;
 }
 
-/* Dark Overlay (Initial state, fades out on intro start) */
-#dark-overlay {
-  position: fixed;
-  z-index: 5;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(10, 10, 30, 0.92);
-  pointer-events: none; /* Allow clicks to pass through */
-  transition: opacity 0.6s;
-  opacity: 1; /* Visible by default */
+/* ===== RESPONSIVE: Canvas ===== */
+body.landscape-warning-active #container canvas,
+body.portrait #container canvas {
+  filter: blur(12px) brightness(0.5) grayscale(0.3);
+  opacity: 0.3;
+  transition: filter 0.7s, opacity 0.7s cubic-bezier(0.4, 2, 0.6, 1);
 }
 
-/* State-based Styling for Body Classes */
-
-/* When intro starts, fade out the dark overlay */
-body.intro-started #dark-overlay {
-  opacity: 0;
-  transition: opacity 1.2s;
+body:not(.landscape-warning-active):not(.portrait) #container canvas {
+  filter: blur(0) brightness(1) grayscale(0);
+  opacity: 1;
+  transition: filter 1.2s, opacity 1.2s cubic-bezier(0.4, 2, 0.6, 1);
 }
 
-/* Hide main content when not intro-started and not in portrait mode */
+/* ===== RESPONSIVE: Landscape Warning ===== */
+body.landscape-warning-active #landscape-warning {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===== HIDDEN WHEN NOT INTRO ===== */
 body:not(.intro-started):not(.portrait) #info,
 body:not(.intro-started):not(.portrait) #landscape-warning,
 body:not(.intro-started):not(.portrait) .main-content,
@@ -204,61 +217,40 @@ body:not(.intro-started):not(.portrait) .starfield {
   pointer-events: none !important;
 }
 
-/* Ensure dark overlay is visible when not intro-started and not in portrait */
+/* ===== DARK OVERLAY STATE ===== */
+body.intro-started #dark-overlay {
+  opacity: 0;
+  transition: opacity 1.2s;
+}
+
 body:not(.intro-started):not(.portrait) #dark-overlay {
   display: block;
   opacity: 1;
 }
 
-/* Hide dark overlay in portrait mode */
-body.portrait #dark-overlay {
-  display: none !important;
-  opacity: 0 !important;
-}
-
-/* Canvas blur/brightness/grayscale effects based on orientation warning */
-body.landscape-warning-active #container canvas,
-body.portrait #container canvas {
-  filter: blur(12px) brightness(0.5) grayscale(0.3);
-  opacity: 0.3;
-  transition: filter 0.7s, opacity 0.7s cubic-bezier(0.4, 2, 0.6, 1);
-}
-
-/* Canvas normal state when no warning is active and not in portrait */
-body:not(.landscape-warning-active):not(.portrait) #container canvas {
-  filter: blur(0) brightness(1) grayscale(0);
-  opacity: 1;
-  transition: filter 1.2s, opacity 1.2s cubic-bezier(0.4, 2, 0.6, 1);
-}
-
-/* Show landscape warning when active */
-body.landscape-warning-active #landscape-warning {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Rotate Icon for Orientation Warning */
-.rotate-icon {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 18px auto;
-  /* SVG data URL for the rotate icon */
-  background: url('data:image/svg+xml;utf8,<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="16" width="32" height="24" rx="6" fill="%23fff" stroke="%2300eaff" stroke-width="2"/><path d="M28 8v4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M28 44v4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M8 28h4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M44 28h4" stroke="%2300eaff" stroke-width="2" stroke-linecap="round"/><path d="M18 38l-4 4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/><path d="M38 38l4 4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/><path d="M18 18l-4-4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/><path d="M38 18l4-4" stroke="%23a259f7" stroke-width="2" stroke-linecap="round"/></svg>') center/contain no-repeat;
-  animation: rotate-phone 1.6s infinite cubic-bezier(0.4, 2, 0.6, 1);
-}
-
-/* Keyframe animation for phone rotation */
-@keyframes rotate-phone {
-  0% {
-    transform: rotate(-18deg);
+/* ===== RESPONSIVE: Extra Small Screens ===== */
+@media screen and (max-width: 360px) {
+  #landscape-warning .warning-content {
+    padding: 1rem 1.2rem;
+    border-radius: 16px;
   }
-  20% {
-    transform: rotate(18deg);
+
+  #landscape-warning h1 {
+    font-size: 1.2rem;
+    letter-spacing: 1px;
   }
-  40% {
-    transform: rotate(-18deg);
+}
+
+/* ===== RESPONSIVE: Tablets ===== */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  #landscape-warning .warning-content {
+    padding: 2rem 3rem;
   }
-  100% {
-    transform: rotate(-18deg);
+}
+
+/* ===== RESPONSIVE: Large Screens ===== */
+@media screen and (min-width: 1920px) {
+  #container {
+    font-size: 1.2em;
   }
 }

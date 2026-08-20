@@ -3,6 +3,21 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
+// ---- HÀM TIỆN ÍCH RESPONSIVE ----
+function getResponsiveScale() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const minDim = Math.min(width, height);
+  const isMobile = width < 768 || ('ontouchstart' in window && width < 1024);
+
+  if (isMobile) {
+    return Math.min(minDim / 400, 1.2);
+  }
+  return Math.min(width / 1920, 1.5);
+}
+
+const responsiveScale = getResponsiveScale();
+
 // ---- KHỞI TẠO SCENE, CAMERA, RENDERER ----
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000000, 0.0015);
@@ -74,8 +89,9 @@ for (let i = 0; i < 15; i++) {
 }
 
 // ---- TẠO THIÊN HÀ (GALAXY) ----
+const isMobile = window.innerWidth < 768 || ('ontouchstart' in window && window.innerWidth < 1024);
 const galaxyParameters = {
-  count: 100000,
+  count: isMobile ? 40000 : 100000,
   arms: 6,
   radius: 100,
   spin: 1,
@@ -432,7 +448,7 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
 scene.add(ambientLight);
 
 // ---- TẠO NỀN SAO (STARFIELD) ----
-const starCount = 20000;
+const starCount = isMobile ? 8000 : 20000;
 const starGeometry = new THREE.BufferGeometry();
 const starPositions = new Float32Array(starCount * 3);
 for (let i = 0; i < starCount; i++) {
@@ -674,10 +690,10 @@ scene.add(planet);
 
 // ---- TẠO CÁC VÒNG CHỮ QUAY QUANH HÀNH TINH ----
 const ringTexts = [
-  'Happy Birthday',
-  "Huỳnh Thị Thùy Dương",
-  "Tuổi mới bớt láo lại nha",
-  "20/08/2010 --> 20/08/2026 ",
+  'Chúc Mừng Sinh Nhật',
+  'Huỳnh Thị Thùy Dương',
+  'Tuổi Mới Bớt Láo Nha',
+  '20/08/2010 - 20/08/2026',
   ...(window.dataCCD && window.dataCCD.data.ringTexts ? window.dataCCD.data.ringTexts : [])
 ];
 
@@ -1026,7 +1042,7 @@ function createGreetingText() {
     // Font này là một font tiêu chuẩn của Three.js, được tải từ CDN.
     loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
         // ---- TÙY CHỈNH LỜI CHÚC CỦA BẠN TẠI ĐÂY ----
-        const text = "Happy Birthday Dương (Lùn)"; // Thay đổi nội dung lời chúc
+        const text = "Chúc Mừng Sinh Nhật"; // Thay đổi nội dung lời chúc
         const size = 5; // Kích thước chữ (càng lớn chữ càng to)
         const height = 0.8; // Độ sâu của chữ 3D
         const bevelThickness = 0.2; // Độ dày của cạnh vát
