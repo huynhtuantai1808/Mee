@@ -1029,7 +1029,7 @@ function createGreetingText() {
     // Font này là một font tiêu chuẩn của Three.js, được tải từ CDN.
     loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
         // ---- TÙY CHỈNH LỜI CHÚC CỦA BẠN TẠI ĐÂY ----
-        const text = "Happy Birthday Mee"; // Thay đổi nội dung lời chúc
+        const text = "Happy Birthday Dương (Lùn)"; // Thay đổi nội dung lời chúc
         const size = 5; // Kích thước chữ (càng lớn chữ càng to)
         const height = 0.8; // Độ sâu của chữ 3D
         const bevelThickness = 0.2; // Độ dày của cạnh vát
